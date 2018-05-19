@@ -10,6 +10,7 @@ from contextlib import contextmanager
 
 # Custom module
 import commands
+import utils
 
 # The size of the message
 HEADER_MSG_SIZE = 10
@@ -24,21 +25,24 @@ COMMANDS = {
 def authenticate(usr, pwd):
 
     # TODO authenticate user
+    print "authenticated"
     return True
 
 @contextmanager
 def create_data_port():
     e_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     e_socket.bind(('',0))
-    port = e_socket.getsockname()[1]
-    yield port
+    # port = e_socket.getsockname()[1]
+    # yield port
+    print 'created an ep sock {}'.format(e_socket.getsockname()[1])
+    yield e_socket
     e_socket.close()
 
 def listen_for_command(client):
 
     # Accept connections forever
     while True:
-
+        print "wating for command from ", client
     	# The buffer to all data received from the
     	# the client.
     	file_data = ""
@@ -52,11 +56,17 @@ def listen_for_command(client):
 
     	# Receive the first 10 bytes indicating the
     	# size of the file
-    	cmd_header = get_all(client_sock, HEADER_MSG_SIZE)
+    	cmd_header = utils.get_all(client[1], HEADER_MSG_SIZE)
 
-        cmd, size = conn_header.split()
+        print "command header", cmd_header
 
-        cmd(size)
+        cmd, size = cmd_header.split()
+
+        with create_data_port as ep_sock:
+            if(cmd == 'put'):
+                data = commands.do_get(ep_sock, size)
+                print 'received', data
+
 
         # # Get the file size
     	# file_size = int(file_sizeBuff)
@@ -69,8 +79,8 @@ def listen_for_command(client):
     	# print "The file data is: "
     	# print conn_data
 
-    	# Close our side
-    	client_sock.close()
+	# Close our side
+	client[1].close()
 
 
 
@@ -85,8 +95,9 @@ def listen_for_connection(sock):
     	# Accept connections
     	client_sock, addr = sock.accept()
 
-    	print "Accepted connection from client: {} {}"\
-            .format(socket.gethostbyname(addr), client_sock)
+
+    	print "Accepted connection from client: {0} {1}"\
+            .format(addr[0], addr[1])
     	print "\n"
 
     	# The buffer to all data received from the
@@ -102,9 +113,11 @@ def listen_for_connection(sock):
 
     	# Receive the first 10 bytes indicating the
     	# size of the file
-    	conn_header = get_all(client_sock, HEADER_MSG_SIZE)
+    	conn_header = utils.get_all(client_sock, HEADER_MSG_SIZE)
 
-        usr, pwd = cmd_header.split()
+        print "connection header: ",conn_header
+
+        usr, pwd = conn_header.split()
 
         if not authenticate(usr, pwd):
             return
@@ -129,7 +142,7 @@ def main():
 
     # Command line checks
     if len(sys.argv) != 2 :
-    	print "USAGE python " + sys.argv[0] + " <PORT NUMBER>"
+    	print "USAGE: python {} <PORT NUMBER>".format(sys.argv[0])
         return
 
     # TODO check valid and non reserved port number
@@ -140,12 +153,22 @@ def main():
     # Create a server socket.
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    # Bind the socket to the port
-    server_socket.bind(('', listen_port))
+    try:
+        # Bind the socket to the port
+        server_socket.bind(('', listen_port))
+    except Exception as e:
+        print e
+        server_socket.close()
 
     # Start listening on the socket
     server_socket.listen(1)
     print "Listening on port {}".format(listen_port)
+
+    # try:
+    #     listen_for_connection(server_socket)
+    # except Exception as e:
+    #     print e
+    #     server_socket.close()
 
     listen_for_connection(server_socket)
 

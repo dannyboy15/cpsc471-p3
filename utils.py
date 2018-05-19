@@ -29,15 +29,16 @@ def get_all(sock, num_bytes):
 	return recv_buff
 
 def send_all(sock, data):
-    # The number of bytes sent
-    numSent = 0
+	print 'sending data'
 
-    # Keep sending until all is sent
-    while True:
+	# The number of bytes sent
+	numSent = 0
 
-		# The number of bytes sent
-		numSent = 0
+	# The number of bytes sent
+	numSent = 0
 
-		# Send the data!
-		while len(data) > numSent:
-			numSent += sock.send(fileData[numSent:])
+	# Send the data!
+	while len(data) > numSent:
+		numSent += sock.send(data[numSent:])
+
+	print 'data sent successfully'
