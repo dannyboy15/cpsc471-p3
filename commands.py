@@ -29,7 +29,9 @@ def do_put(sock, file_name):
 
 
 def do_ls():
-    sp.call(["ls", "-l"])
+    # sp.call(["ls", "-l"])
+    output = sp.check_output('ls')
+    print output
 
 def do_lls():
     sp.call(["ls", "-l"])

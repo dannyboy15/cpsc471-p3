@@ -26,10 +26,12 @@ def get_all(sock, num_bytes):
 		# Add the received bytes to the buffer
 		recv_buff += tmp_buff
 
+	print "received data:", recv_buff
 	return recv_buff
 
 def send_all(sock, data):
-	print 'sending data'
+	print sock.getsockname()[1]
+	print 'sending data', data
 
 	# The number of bytes sent
 	numSent = 0
