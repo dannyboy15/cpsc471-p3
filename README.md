@@ -32,3 +32,5 @@ cd cpsc471-p3
 * **Daniel Bravo**
   * Email: [bravod@csu.fullerton.edu](bravod@csu.fullerton.edu)
   * GitHub: [dannyboy15](https://github.com/dannyboy15)
+* **Daniel Ceja**
+  * Email: cejad_08@csu.fullerton.edu
