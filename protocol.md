@@ -3,36 +3,52 @@
 This is a protocol for transferring files
 
 ### Protocol Description
-The client sends a message to the server to establish a connection. If the the server returns affirmative, the connection has been set up.
+The client establishes a connection with the server and is ready
+exchange messages.
 
-Once set up, the client can start sending files. Before a file get sent the client send a header with file info. The server then sends an acknowledgement that the header was received and is ready to transfer a file.
+With a connection established, the client can start sending and
+receiving files. However, before a file gets sent/received the
+client must send a header with the transaction info. The server
+then acknowledges the transaction by setting up an ephemeral
+socket by which the two end systems can send/receive the data.
+Once the transaction is finished the socket is destroyed and the
+server awaits another command.
 
 ### Types of messages
 
 #### Server
-* error (10) - error number and description of an error that may have occurred
-* connection_opened (10) - an acknowledgement that a connection has been established
-* header_received (10) - an acknowledgement that a content_header was received
+* prt (10) - This is a port header. It includes the port number
+for the ephemeral socket
+* rgt (10) - This is a return header for the get command. It
+includes the size of the file to be sent
+* rls (10) - This is a return header for the ls command. It
+includes the size of the data to be sent
 
 #### Client
-* open_connection (10) - request to server to establish connection
-* content_header (10) - the size and type of message
+* get (10) - This is a get request header. It includes the length
+of the name of the file it is requesting.
+* put (10) - This is a put request header. It includes the length
+of the name of the file, the length of the files itself and a
+delimiter.
+* lls (10) - This is an ls request header. It does not send
+additional information.
 
+#### Example of `put` command
 ```
 client                    server
-   |     open_connection     |
+   |     open connection     |
    |  -------------------->  |
    |                         |
-   |    connection_opened    |
-   |  <--------------------  |
-   |                         |
-   |     content_header      |
+   |        put header       |
    |  -------------------->  |
    |                         |
-   |     header_received     |
+   |       port header       |
    |  <--------------------  |
+   |                         |
+   |     connect to port     |
+   |  -------------------->  |
    |                         |
    |         content         |
-   |  <------------------->  |
+   |  -------------------->  |
 
 ```
